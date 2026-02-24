@@ -40,3 +40,27 @@ create table estoque (
     quantidade_disponivel INT,
     quantidade_minima INT
 );
+
+CREATE TABLE usuario_sistema (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    senha VARCHAR(255) NOT NULL,
+    perfil VARCHAR(50) NOT NULL,
+    ativo BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE item_compra (
+    id SERIAL PRIMARY KEY,
+    nome_item VARCHAR(100) NOT NULL,
+    quantidade INT NOT NULL,
+    valor_unitario DECIMAL(10,2) NOT NULL,
+    data_compra DATE NOT NULL
+);
+
+CREATE TABLE devolucao_epi (
+    id SERIAL PRIMARY KEY,
+    data_devolucao DATE NOT NULL,
+    motivo VARCHAR(200),
+    quantidade INT NOT NULL
+);
