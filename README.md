@@ -87,8 +87,8 @@ Para organização e padronização da modelagem foram adotados:
 ## 🤝 Colaboração
 
 O desenvolvimento foi realizado de forma colaborativa entre os membros do grupo sendo eles:
--Tiago Santos
--Gustavo Muller
--Vitor Vinicius
--Luis
--Danilo
+- Tiago Santos
+- Gustavo Muller
+- Vitor Vinicius
+- Luis
+- Danilo
