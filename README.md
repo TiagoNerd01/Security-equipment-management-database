@@ -3,14 +3,7 @@
 ## 📌 Descrição do Projeto
 Este projeto tem como objetivo desenvolver a modelagem de um banco de dados para um **Sistema de Controle de Distribuição de Equipamentos de Proteção Individual (EPI)**, baseado em uma planilha proveniente de um cenário real de controle de uniformes.
 
-As entidades foram definidas a partir das necessidades observadas nesse processo, incluindo:
-
-- Funcionários  
-- Unidades e setores  
-- Tipos de EPI  
-- Tamanhos  
-- Controle de estoque  
-- Registro de entregas  
+As entidades foram definidas a partir das necessidades observadas nesse processo, incluindo cadastro organizacional, controle de estoque, movimentações de equipamentos e processos administrativos relacionados à aquisição e devolução de EPIs.
 
 O sistema busca estruturar essas informações de forma organizada, permitindo futura implementação em um banco de dados relacional.
 
@@ -41,18 +34,42 @@ O domínio foi definido como **Security Equipment Management Database**, pois:
 
 ## 🧩 Entidades Identificadas
 
-As seguintes entidades foram definidas com base no domínio:
+As entidades foram organizadas em grupos conforme sua função dentro do sistema.
 
+### Entidades cadastrais
 - Funcionario  
 - Unidade  
 - Setor  
-- Tipo_epi  
-- Tamanho  
-- Estoque  
-- Entrega_epi  
+- tipo_epi  
+- tamanho  
+- fornecedor  
+- usuario_sistema 
+
+### Entidades operacionais
+- estoque  
+- entrega_epi  
+- devolucao_epi  
+
+### Entidades de controle de compras
+- compra_epi  
+- item_compra  
 
 ---
+## 📊 Estrutura Funcional do Modelo
 
+O modelo permite representar:
+
+- Cadastro de funcionários e estrutura organizacional  
+- Controle de tipos de EPIs e seus tamanhos  
+- Controle de estoque por unidade  
+- Registro de entregas de equipamentos  
+- Registro de devoluções  
+- Controle de fornecedores  
+- Registro de compras de EPIs  
+- Detalhamento dos itens comprados  
+- Controle de usuários responsáveis pelas operações
+
+---
 ## ⚙️ Padrões Utilizados
 
 Para organização e padronização da modelagem foram adotados:
@@ -69,9 +86,9 @@ Para organização e padronização da modelagem foram adotados:
 
 ## 🤝 Colaboração
 
-O desenvolvimento foi realizado de forma colaborativa utilizando o :contentReference[oaicite:0]{index=0}, permitindo:
-
-- Versionamento do projeto  
-- Organização dos scripts de DDL  
-- Contribuições individuais dos integrantes através de commits  
-- Integração das alterações por meio de Pull Requests
+O desenvolvimento foi realizado de forma colaborativa entre os membros do grupo sendo eles:
+-Tiago Santos
+-Gustavo Muller
+-Vitor Vinicius
+-Luis
+-Danilo
