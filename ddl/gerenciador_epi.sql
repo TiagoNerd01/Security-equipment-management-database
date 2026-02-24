@@ -64,3 +64,28 @@ CREATE TABLE devolucao_epi (
     motivo VARCHAR(200),
     quantidade INT NOT NULL
 );
+
+CREATE TABLE entrega_epi (
+    id_entrega_epi INT PRIMARY KEY,	
+    data_entrega_epi DATE NOT NULL,
+    quantidade_entregue INT NOT NULL,
+    setor_destino VARCHAR(100) NOT NULL,
+    nome_entregador VARCHAR(100) NOT NULL,
+    prazo_validade INT
+);
+
+CREATE TABLE fornecedor (
+    id_fornecedor INT PRIMARY KEY,
+    nome_fornecedor VARCHAR(100) NOT NULL,
+    cnpj VARCHAR(20) UNIQUE NOT NULL,
+    telefone VARCHAR(20),
+    email VARCHAR(100)
+);
+
+CREATE TABLE compra_epi (
+    id_compra_epi INT PRIMARY KEY,
+    data_emissao_nf DATE NOT NULL,
+    numero_nota_fiscal VARCHAR(50) NOT NULL,
+    valor_total_compra DECIMAL(10,2) NOT NULL,
+    metodo_pagamento VARCHAR(50)
+);
