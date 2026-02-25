@@ -90,5 +90,6 @@ O desenvolvimento foi realizado de forma colaborativa entre os membros do grupo 
 - Tiago Santos
 - Gustavo Muller
 - Vitor Vinicius
-- Luis
-- Danilo
+- Luis Felipe
+- Danilo Santos
+- Breno Kayan
