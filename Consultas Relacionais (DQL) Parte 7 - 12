@@ -1,0 +1,37 @@
+--Liste todas as unidades da empresa e o estoque de EPIs disponível em cada uma, incluindo unidades sem estoque.
+SELECT u.nome_unidade, u.cidade, te.nome_epi, e.quantidade_disponivel
+FROM unidade u
+LEFT JOIN funcionario f ON u.id = f.id_unidade
+LEFT JOIN entrega_epi ent ON f.id = ent.id_funcionario
+LEFT JOIN estoque e ON ent.id_estoque = e.id
+LEFT JOIN tipo_epi te ON e.id_tipo_epi = te.id;
+
+--Mostre o nome do funcionário e o cargo (permissão) que ele possui no sistema de controle.
+SELECT f.nome AS nome_funcionario, f.cargo, s.nome_setor
+FROM funcionario f
+INNER JOIN setor s ON f.id_setor = s.id;
+
+--Relacione o EPI e seu respectivo tamanho cadastrado na tabela de estoque.
+SELECT te.nome_epi, t.descricao AS tamanho
+FROM estoque e
+INNER JOIN tipo_epi te ON e.id_tipo_epi = te.id
+INNER JOIN tamanho t ON e.id_tamanho = t.id;
+
+-- Liste todos os setores cadastrados e os funcionários a eles vinculados, incluindo setores que ainda não possuem pessoal.
+SELECT s.nome_setor, f.nome AS nome_funcionario
+FROM funcionario f
+RIGHT JOIN setor s ON f.id_setor = s.id;
+
+--Exiba a data da entrega do EPI e o nome do fornecedor original daquele lote de equipamento.
+SELECT ent.data_entrega, f.nome_fornecedor, te.nome_epi
+FROM entrega_epi ent
+INNER JOIN estoque e ON ent.id_estoque = e.id
+INNER JOIN tipo_epi te ON e.id_tipo_epi = te.id
+INNER JOIN item_compra ic ON te.id = ic.id_tipo_epi
+INNER JOIN compra_epi c ON ic.id_compra = c.id
+INNER JOIN fornecedor f ON c.id_fornecedor = f.id;
+
+--Liste todos os registros de compras e o nome do fabricante do EPI, incluindo compras com fabricantes não identificados.
+SELECT ce.data_emissao_nf, fo.nome_fornecedor AS fabricante_fornecedor
+FROM compra_epi ce
+LEFT JOIN fornecedor fo ON ce.id_fornecedor = fo.id;
