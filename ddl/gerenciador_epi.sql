@@ -70,11 +70,13 @@ CREATE TABLE estoque (
     id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_tipo_epi INT NOT NULL,
     id_tamanho INT NOT NULL,
+    id_unidade int NOT null,
     quantidade_disponivel INT NOT NULL CHECK (quantidade_disponivel >= 0),
     quantidade_minima INT NOT NULL CHECK (quantidade_minima >= 0),
     FOREIGN KEY (id_tipo_epi) REFERENCES tipo_epi(id),
     FOREIGN KEY (id_tamanho) REFERENCES tamanho(id),
-    UNIQUE (id_tipo_epi, id_tamanho)
+    FOREIGN KEY (id_unidade) REFERENCES unidade(id),
+    UNIQUE (id_tipo_epi, id_tamanho, id_unidade)
 );
 
 CREATE TABLE compra_epi (
@@ -160,78 +162,51 @@ INSERT INTO usuario_sistema (nome, email, senha, perfil) VALUES
 ('Supervisor', 'supervisor@empresa.com', '123456', 'SUPERVISOR');
 
 INSERT INTO funcionario (nome, cargo, id_setor, id_unidade, status) VALUES
-('Carlos Silva', 'Soldador', 1, 1, TRUE),
+('Carlos Silva', 'Soldador', 1, 3, TRUE),
 ('Ana Oliveira', 'Pintor', 2, 1, TRUE),
-('Marcos Souza', 'Mecânico', 1, 1, TRUE),
+('Marcos Souza', 'Mecânico', 1, 3, TRUE),
 ('Julia Costa', 'Engenheira', 3, 1, TRUE),
-('Ricardo Alves', 'Técnico de Segurança', 3, 1, TRUE),
+('Ricardo Alves', 'Técnico de Segurança', 3, 3, TRUE),
 ('Fernanda Lima', 'Soldador', 1, 1, TRUE),
 ('Paulo Santos', 'Pintor', 2, 1, TRUE),
 ('Beatriz Rocha', 'Almoxarife', 3, 1, TRUE),
 ('Lucas Mendes', 'Mecânico', 1, 1, TRUE),
-('Mariana Ferreira', 'Soldador', 1, 2, TRUE),
+('Mariana Ferreira', 'Soldador', 1, 3, TRUE),
 ('Roberto Dias', 'Eletricista', 3, 2, TRUE),
 ('Camila Nunes', 'Pintor', 2, 2, TRUE),
 ('Bruno Castro', 'Soldador', 1, 2, TRUE),
-('Amanda Silva', 'Engenheira', 3, 2, TRUE),
+('Amanda Silva', 'Engenheira', 3, 3, TRUE),
 ('Diego Ramos', 'Mecânico', 1, 2, TRUE),
 ('Larissa Moraes', 'Técnica de Segurança', 3, 2, TRUE),
 ('Gabriel Ortiz', 'Eletricista', 3, 1, TRUE),
 ('Vanessa Guedes', 'Almoxarife', 3, 2, TRUE),
 ('Thiago Luz', 'Soldador', 1, 1, FALSE),
-('Sonia Abrantes', 'Pintor', 2, 1, TRUE),
+('Sonia Abrantes', 'Pintor', 2, 3, TRUE),
 ('Felipe Neto', 'Mecânico', 1, 1, TRUE),
 ('Renata Igaci', 'Soldador', 1, 2, TRUE),
 ('Hugo Boss', 'Eletricista', 3, 2, FALSE),
 ('Patrícia Poeta', 'Engenheira', 3, 1, TRUE),
 ('Otávio Mesquita', 'Soldador', 1, 2, FALSE),
 ('Zeca Pagodinho', 'Pintor', 2, 2, TRUE),
-('Arlindo Cruz', 'Mecânico', 1, 1, FALSE),
+('Arlindo Cruz', 'Mecânico', 1, 3, FALSE),
 ('Ivete Sangalo', 'Técnica de Segurança', 3, 1, TRUE),
 ('Gilberto Gil', 'Eletricista', 3, 1, FALSE),
-('Caetano Veloso', 'Soldador', 1, 1, TRUE);
+('Caetano Veloso', 'Soldador', 1, 3, TRUE);
 
-INSERT INTO estoque (id_tipo_epi, id_tamanho, quantidade_disponivel, quantidade_minima) VALUES
-(1,1,120,20),
-(1,2,115,20),
-(1,3,110,20),
-
-(2,1,95,15),
-(2,2,90,15),
-(2,3,85,15),
-
-(3,1,80,15),
-(3,2,75,15),
-(3,3,70,15),
-
-(4,1,60,10),
-(4,2,55,10),
-(4,3,50,10),
-
-(5,1,140,30),
-(5,2,135,30),
-(5,3,130,30),
-
-(6,1,100,20),
-(6,2,95,20),
-(6,3,90,20),
-
-(7,1,70,15),
-(7,2,65,15),
-(7,3,60,15),
-
-(8,1,40,10),
-(8,2,35,10),
-(8,3,30,10),
-
-(9,1,85,15),
-(9,2,80,15),
-(9,3,75,15),
-
-(10,1,110,20),
-(10,2,105,20),
-(10,3,100,20);
-
+INSERT INTO estoque (id_tipo_epi, id_tamanho, quantidade_disponivel, quantidade_minima, id_unidade)
+SELECT 
+    t.id_tipo_epi,
+    ta.id_tamanho,
+    (RANDOM() * 100)::INT + 10 AS quantidade_disponivel,  -- entre 10 e 110
+    (RANDOM() * 20)::INT + 5 AS quantidade_minima,        -- entre 5 e 25
+    u.id_unidade
+FROM 
+    (SELECT 1 id_tipo_epi UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 
+     UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10) t
+CROSS JOIN 
+    (SELECT 1 id_tamanho UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4) ta
+CROSS JOIN 
+    (SELECT 1 id_unidade UNION ALL SELECT 2) u;
 INSERT INTO fornecedor (nome_fornecedor, cnpj, telefone, email) VALUES
 ('Protec Equipamentos', '11.234.567/0001-01', '1130000001', 'contato@protec.com'),
 ('Segura EPI', '11.234.567/0001-02', '1130000002', 'contato@seguraepi.com'),
@@ -429,27 +404,20 @@ INSERT INTO entrega_epi (data_entrega,id_funcionario,quantidade_entregue,id_usua
 ('2024-03-01',30,2,1,30);
 
 INSERT INTO devolucao_epi (id_entrega,data_devolucao,motivo,quantidade,id_usuario_registro) VALUES
-(1,'2024-03-10','EPI danificado',1,1),
-(2,'2024-03-11','Troca de tamanho',1,2),
+
 (3,'2024-03-12','Equipamento com defeito',1,3),
 (4,'2024-03-13','Substituição preventiva',1,1),
 (5,'2024-03-14','Desligamento do funcionário',1,2),
 
 (6,'2024-03-15','Troca por modelo novo',1,3),
-(7,'2024-03-16','EPI danificado',1,1),
-(8,'2024-03-17','Erro na entrega',1,2),
-(9,'2024-03-18','Troca de tamanho',1,3),
 (10,'2024-03-19','Equipamento com defeito',1,1),
 
 (11,'2024-03-20','Substituição preventiva',1,2),
 (12,'2024-03-21','Desligamento do funcionário',1,3),
 (13,'2024-03-22','Troca por modelo novo',1,1),
-(14,'2024-03-23','EPI danificado',1,2),
 (15,'2024-03-24','Erro na entrega',1,3),
 
 (16,'2024-03-25','Troca de tamanho',1,1),
-(17,'2024-03-26','Equipamento com defeito',1,2),
-(18,'2024-03-27','Substituição preventiva',1,3),
 (19,'2024-03-28','Desligamento do funcionário',1,1),
 (20,'2024-03-29','Troca por modelo novo',1,2),
 
@@ -461,6 +429,3 @@ INSERT INTO devolucao_epi (id_entrega,data_devolucao,motivo,quantidade,id_usuari
 
 (26,'2024-04-04','Desligamento do funcionário',1,2),
 (27,'2024-04-05','Troca por modelo novo',1,3),
-(28,'2024-04-06','EPI danificado',1,1),
-(29,'2024-04-07','Erro na entrega',1,2),
-(30,'2024-04-08','Troca de tamanho',1,3);
