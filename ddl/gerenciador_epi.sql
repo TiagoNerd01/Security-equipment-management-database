@@ -429,3 +429,82 @@ INSERT INTO devolucao_epi (id_entrega,data_devolucao,motivo,quantidade,id_usuari
 
 (26,'2024-04-04','Desligamento do funcionário',1,2),
 (27,'2024-04-05','Troca por modelo novo',1,3),
+
+-- Views --
+
+-- Inventário Geral --
+CREATE OR REPLACE VIEW vw_inventario_geral AS
+SELECT 
+    te.nome_epi,
+    t.descricao AS tamanho,
+    SUM(e.quantidade_disponivel) AS quantidade_total
+FROM 
+    estoque e
+JOIN 
+    tipo_epi te ON e.id_tipo_epi = te.id
+JOIN 
+    tamanho t ON e.id_tamanho = t.id
+GROUP BY 
+    te.nome_epi, 
+    t.descricao
+ORDER BY 
+    te.nome_epi, 
+    t.descricao;
+
+-- Entregas por Setor --
+
+CREATE OR REPLACE VIEW vw_entregas_por_setor AS
+SELECT 
+    s.nome_setor,
+    SUM(ee.quantidade_entregue) AS total_epis_entregues
+FROM 
+    entrega_epi ee
+JOIN 
+    funcionario f ON ee.id_funcionario = f.id
+JOIN 
+    setor s ON f.id_setor = s.id
+GROUP BY 
+    s.nome_setor
+ORDER BY 
+    total_epis_entregues DESC;
+
+-- Controle de EPIs Vencidos --
+
+ALTER TABLE tipo_epi ADD COLUMN IF NOT EXISTS validade_dias INT NOT NULL DEFAULT 180;
+
+-- Inserção de data de vencimento (em dias) -- 
+UPDATE tipo_epi SET validade_dias = 1800 WHERE id = 1; -- Capacete de Segurança (5 anos)
+UPDATE tipo_epi SET validade_dias = 30   WHERE id = 2; -- Luva de Proteção Nitrílica (1 mês)
+UPDATE tipo_epi SET validade_dias = 365  WHERE id = 3; -- Óculos de Proteção Incolor (1 ano)
+UPDATE tipo_epi SET validade_dias = 365  WHERE id = 4; -- Bota de Segurança com Biqueira (1 ano)
+UPDATE tipo_epi SET validade_dias = 90   WHERE id = 5; -- Protetor Auricular Tipo Plug (3 meses)
+UPDATE tipo_epi SET validade_dias = 15   WHERE id = 6; -- Máscara Respiratória PFF2 (15 dias)
+UPDATE tipo_epi SET validade_dias = 180  WHERE id = 7; -- Avental de PVC (6 meses)
+UPDATE tipo_epi SET validade_dias = 1095 WHERE id = 8; -- Cinto de Segurança Tipo Paraquedista (3 anos)
+UPDATE tipo_epi SET validade_dias = 180  WHERE id = 9; -- Mangote de Proteção (6 meses)
+UPDATE tipo_epi SET validade_dias = 365  WHERE id = 10;-- Protetor Facial (1 ano)
+
+CREATE OR REPLACE VIEW vw_funcionarios_epi_vencido AS
+SELECT 
+    f.nome AS nome_funcionario,
+    s.nome_setor,
+    te.nome_epi,
+    ee.data_entrega,
+    te.validade_dias,
+    (ee.data_entrega + (te.validade_dias || ' days')::INTERVAL)::DATE AS data_vencimento
+FROM 
+    entrega_epi ee
+JOIN 
+    funcionario f ON ee.id_funcionario = f.id
+JOIN 
+    setor s ON f.id_setor = s.id
+JOIN 
+    estoque est ON ee.id_estoque = est.id
+JOIN 
+    tipo_epi te ON est.id_tipo_epi = te.id
+LEFT JOIN 
+    devolucao_epi de ON ee.id = de.id_entrega
+WHERE 
+    de.id IS NULL -- Garante que o funcionário ainda está com o EPI (ou seja, que ainda não devolveu)
+    AND (ee.data_entrega + (te.validade_dias || ' days')::INTERVAL)::DATE < CURRENT_DATE;
+
