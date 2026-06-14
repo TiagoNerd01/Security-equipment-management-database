@@ -1,5 +1,6 @@
 --create database gerenciador_epis;
 
+DROP TABLE IF EXISTS alerta_estoque;
 DROP TABLE IF EXISTS devolucao_epi;
 DROP TABLE IF EXISTS entrega_epi;
 DROP TABLE IF EXISTS item_compra;
@@ -123,6 +124,20 @@ CREATE TABLE devolucao_epi (
     FOREIGN KEY (id_entrega) REFERENCES entrega_epi(id) ON DELETE CASCADE,
     FOREIGN KEY (id_usuario_registro) REFERENCES usuario_sistema(id)
 );
+
+ CREATE TABLE alerta_estoque (
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_estoque INT NOT NULL,
+    mensagem VARCHAR(255) NOT NULL,
+    data_alerta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_estoque) REFERENCES estoque(id)
+);
+
+ CREATE TRIGGER AlertaEstoqueBaixo
+AFTER INSERT OR UPDATE OF quantidade_disponivel, quantidade_minima ON estoque
+FOR EACH ROW
+EXECUTE FUNCTION fn_alerta_estoque_baixo();
+
 INSERT INTO unidade (nome_unidade, sigla, cidade) VALUES
 ('Unidade Feira de Santana', 'FSA', 'Feira de Santana'),
 ('Unidade Salvador', 'SSA', 'Salvador'),
