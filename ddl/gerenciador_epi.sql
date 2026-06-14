@@ -14,6 +14,7 @@ DROP TABLE IF EXISTS tamanho;
 DROP TABLE IF EXISTS setor;
 DROP TABLE IF EXISTS unidade;
 DROP TABLE IF EXISTS log_devolucao_epi;
+DROP TABLE IF EXISTS alerta_tamanho_incompativel;
 
 CREATE TABLE unidade (
     id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -72,7 +73,9 @@ CREATE TABLE funcionario (
     id_setor INT NOT NULL,
     id_unidade INT NOT NULL,
     status BOOLEAN DEFAULT TRUE,
+    id_tamanho_padrao INT NOT NULL,
     FOREIGN KEY (id_setor) REFERENCES setor(id),
+    FOREIGN KEY (id_tamanho_padrao) REFERENCES tamanho(id),
     FOREIGN KEY (id_unidade) REFERENCES unidade(id)
 );
 
@@ -141,6 +144,15 @@ CREATE TABLE devolucao_epi (
     data_alerta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_estoque) REFERENCES estoque(id)
 );
+--Tabela feita apenas para manter controle dos epis entregues fora do tamanho
+CREATE TABLE alerta_tamanho_incompativel (
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_entrega INT NOT NULL,
+    id_funcionario INT NOT NULL,
+    tamanho_entregue VARCHAR(50),
+    tamanho_perfil VARCHAR(50),
+    data_alerta TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 -- Cria o trigger associado à alerta_estoque
  CREATE TRIGGER AlertaEstoqueBaixo
@@ -153,6 +165,12 @@ CREATE TRIGGER LogDevolucaoEPI
 AFTER INSERT ON devolucao_epi
 FOR EACH ROW
 EXECUTE FUNCTION fn_log_devolucao();
+
+--Cria o trigger associado à tabela alerta_tamanho_incompativel
+CREATE TRIGGER ValidarTamanhoEPI
+AFTER INSERT ON entrega_epi
+FOR EACH ROW
+EXECUTE FUNCTION fn_validar_tamanho_epi();
 
 INSERT INTO unidade (nome_unidade, sigla, cidade) VALUES
 ('Unidade Feira de Santana', 'FSA', 'Feira de Santana'),
