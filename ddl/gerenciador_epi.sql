@@ -13,6 +13,7 @@ DROP TABLE IF EXISTS tipo_epi;
 DROP TABLE IF EXISTS tamanho;
 DROP TABLE IF EXISTS setor;
 DROP TABLE IF EXISTS unidade;
+DROP TABLE IF EXISTS log_devolucao_epi;
 
 CREATE TABLE unidade (
     id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -54,6 +55,14 @@ CREATE TABLE usuario_sistema (
     senha VARCHAR(255) NOT NULL,
     perfil VARCHAR(50) NOT NULL,
     ativo BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE log_devolucao_epi (
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_devolucao INT NOT NULL,
+    data_devolucao DATE NOT NULL,
+    estado_equipamento VARCHAR(200),
+    data_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE funcionario (
@@ -133,10 +142,17 @@ CREATE TABLE devolucao_epi (
     FOREIGN KEY (id_estoque) REFERENCES estoque(id)
 );
 
+-- Cria o trigger associado à alerta_estoque
  CREATE TRIGGER AlertaEstoqueBaixo
 AFTER INSERT OR UPDATE OF quantidade_disponivel, quantidade_minima ON estoque
 FOR EACH ROW
 EXECUTE FUNCTION fn_alerta_estoque_baixo();
+
+-- Cria o trigger associado à tabela devolucao_epi
+CREATE TRIGGER LogDevolucaoEPI
+AFTER INSERT ON devolucao_epi
+FOR EACH ROW
+EXECUTE FUNCTION fn_log_devolucao();
 
 INSERT INTO unidade (nome_unidade, sigla, cidade) VALUES
 ('Unidade Feira de Santana', 'FSA', 'Feira de Santana'),
