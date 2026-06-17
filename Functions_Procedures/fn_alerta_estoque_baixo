@@ -1,0 +1,19 @@
+CREATE OR REPLACE FUNCTION fn_alerta_estoque_baixo()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Verifica se a quantidade disponivel ficou menor a quantidade mínima
+    -- Adicionamos uma checagem para evitar alertas duplicados
+    IF NEW.quantidade_disponivel <= NEW.quantidade_minima AND 
+       (TG_OP = 'INSERT' OR OLD.quantidade_disponivel > OLD.quantidade_minima) THEN
+        
+        -- notificacao
+        INSERT INTO alerta_estoque (id_estoque, mensagem)
+        VALUES (
+            NEW.id, 
+            'ALERTA: Estoque baixo. Quantidade atual: ' || NEW.quantidade_disponivel || ' (Mínimo: ' || NEW.quantidade_minima || ')'
+        );
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
