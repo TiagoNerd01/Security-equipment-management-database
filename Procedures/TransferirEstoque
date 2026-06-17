@@ -1,0 +1,45 @@
+-- DROP PROCEDURE public.transferirestoque();
+
+CREATE OR REPLACE PROCEDURE TransferirEstoque(
+    p_id_estoque_origem INT,
+    p_id_unidade_destino INT,
+    p_quantidade INT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_tipo_epi INT;
+    v_tamanho INT;
+    v_estoque_destino_id INT;
+BEGIN
+    --Verifica se a origem tem saldo suficiente
+    IF (SELECT quantidade_disponivel FROM estoque WHERE id = p_id_estoque_origem) < p_quantidade THEN
+        RAISE EXCEPTION 'Saldo insuficiente na unidade de origem para a transferência.';
+    END IF;
+
+    -- Identifica o tipo e tamanho do EPI
+    SELECT id_tipo_epi, id_tamanho INTO v_tipo_epi, v_tamanho 
+    FROM estoque WHERE id = p_id_estoque_origem;
+
+    -- Abate a quantidade da unidade de origem
+    UPDATE estoque
+    SET quantidade_disponivel = quantidade_disponivel - p_quantidade
+    WHERE id = p_id_estoque_origem;
+
+    -- Verifica se o item já existe na unidade de destino para apenas atualizar o saldo
+    SELECT id INTO v_estoque_destino_id 
+    FROM estoque 
+    WHERE id_tipo_epi = v_tipo_epi AND id_tamanho = v_tamanho AND id_unidade = p_id_unidade_destino;
+
+    IF FOUND THEN
+        UPDATE estoque
+        SET quantidade_disponivel = quantidade_disponivel + p_quantidade
+        WHERE id = v_estoque_destino_id;
+    ELSE
+        -- Se não existe na unidade de destino, cria um novo registro de estoque para ela
+        INSERT INTO estoque (id_tipo_epi, id_tamanho, id_unidade, quantidade_disponivel, quantidade_minima)
+        VALUES (v_tipo_epi, v_tamanho, p_id_unidade_destino, p_quantidade, 10);
+    END IF;
+END;
+$$;
+;

@@ -1,0 +1,31 @@
+-- DROP PROCEDURE public.efetuarcompraepi();
+
+CREATE OR REPLACE PROCEDURE EfetuarCompraEPI(
+    p_id_compra INT,
+    p_id_tipo_epi INT,
+    p_id_tamanho INT,
+    p_id_unidade INT,
+    p_quantidade INT,
+    p_valor_unitario NUMERIC(10,2)
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    --Insere o item na tabela de detalhes da compra
+    INSERT INTO item_compra (id_compra, id_tipo_epi, id_tamanho, quantidade, valor_unitario)
+    VALUES (p_id_compra, p_id_tipo_epi, p_id_tamanho, p_quantidade, p_valor_unitario);
+
+    -- Atualiza o estoque ou insere caso o item ainda não esteja cadastrado
+    IF EXISTS (SELECT 1 FROM estoque WHERE id_tipo_epi = p_id_tipo_epi AND id_tamanho = p_id_tamanho AND id_unidade = p_id_unidade) THEN
+        UPDATE estoque
+        SET quantidade_disponivel = quantidade_disponivel + p_quantidade
+        WHERE id_tipo_epi = p_id_tipo_epi 
+          AND id_tamanho = p_id_tamanho 
+          AND id_unidade = p_id_unidade;
+    ELSE
+        INSERT INTO estoque (id_tipo_epi, id_tamanho, id_unidade, quantidade_disponivel, quantidade_minima)
+        VALUES (p_id_tipo_epi, p_id_tamanho, p_id_unidade, p_quantidade, 10); -- 10 é o valor padrão de segurança
+    END IF;
+END;
+$$;
+;
