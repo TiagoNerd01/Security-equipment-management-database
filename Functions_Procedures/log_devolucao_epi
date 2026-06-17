@@ -1,0 +1,15 @@
+--Nova função relacionada a tabela log_devolucao_epi
+CREATE OR REPLACE FUNCTION fn_log_devolucao()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- O log agora grava o conteúdo da nova coluna 'estado'
+    INSERT INTO log_devolucao_epi (id_devolucao, data_devolucao, estado_equipamento)
+    VALUES (
+        NEW.id, 
+        NEW.data_devolucao, 
+        NEW.estado
+    );
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
